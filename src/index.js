@@ -26,6 +26,12 @@ function checksExistsUserAccount(request, response, next) {
 app.post("/users", (request, response) => {
   const { name, username } = request.body;
 
+  const userNameExist = users.some((user) => user.username === username);
+
+  if (userNameExist) {
+    return response.status(400).json({ error: "Username already exists" });
+  }
+
   const user = {
     id: uuidv4(),
     name,
@@ -58,7 +64,7 @@ app.post("/todos", checksExistsUserAccount, (request, response) => {
 
   user.todos.push(todo);
 
-  return response.json(todo);
+  return response.status(201).json(todo);
 });
 
 app.put("/todos/:id", checksExistsUserAccount, (request, response) => {
@@ -68,10 +74,14 @@ app.put("/todos/:id", checksExistsUserAccount, (request, response) => {
 
   const todo = user.todos.find((todo) => todo.id === id);
 
-  if (title) todo.title = title;
-  if (deadline) todo.deadline = new Date(deadline);
+  if (todo) {
+    if (title) todo.title = title;
+    if (deadline) todo.deadline = new Date(deadline);
 
-  return response.json(todo);
+    return response.json(todo);
+  }
+
+  return response.status(404).json({ error: "Todo not found" });
 });
 
 app.patch("/todos/:id/done", checksExistsUserAccount, (request, response) => {
@@ -79,16 +89,27 @@ app.patch("/todos/:id/done", checksExistsUserAccount, (request, response) => {
   const id = request.params.id;
 
   const todo = user.todos.find((todo) => todo.id === id);
-  todo.done = true;
 
-  return response.json(todo);
+  if (todo) {
+    todo.done = true;
+
+    return response.json(todo);
+  }
+
+  return response.status(404).json({ error: "Todo not found" });
 });
 
 app.delete("/todos/:id", checksExistsUserAccount, (request, response) => {
-  const user = request.user;
+  const todos = request.user.todos;
   const id = request.params.id;
 
-  user.todos = user.todos.filter((todo) => todo.id !== id);
+  const todoIndex = todos.findIndex((todo) => todo.id === id);
+
+  if (todoIndex === -1) {
+    return response.status(404).json({ error: "Todo not found" });
+  }
+
+  todos.splice(todoIndex, 1);
 
   return response.status(204).send();
 });
