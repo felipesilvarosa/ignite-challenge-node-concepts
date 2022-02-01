@@ -12,9 +12,11 @@ const users = [];
 
 function checksExistsUserAccount(request, response, next) {
   const usernameToFind = request.headers.username;
+
   const userNameExist = users.find((user) => user.username === usernameToFind);
 
   if (userNameExist) {
+    request.user = userNameExist;
     return next();
   }
 
@@ -35,11 +37,9 @@ app.post("/users", (request, response) => {
 });
 
 app.get("/todos", checksExistsUserAccount, (request, response) => {
-  console.log(request);
+  const { user } = request;
 
-  const user = users.find((user) => user.username === username);
-
-  return response.json(request);
+  return response.json(user.todos);
 });
 
 app.post("/todos", checksExistsUserAccount, (request, response) => {
