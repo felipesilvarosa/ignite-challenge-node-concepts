@@ -1,4 +1,9 @@
-## Challenge 01 - Node.js - Ignite - Rocketseat
+# Challenge 01 - Node.js - Ignite - Rocketseat
+
+## Description
+
+Repository for the [Ignite](https://lp.rocketseat.com.br/ignite) course challenge.
+
 
 ### Requirements:
 
